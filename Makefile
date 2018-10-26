@@ -1,7 +1,10 @@
 
+default: lint test
+
 lint:
 	pylint src tests
-	flake8 src tests
+	flake8
+	black
 
 test:
-	nose2 -v tests.api_testing --with-coverage
+	nose2 -v --with-coverage
