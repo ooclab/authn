@@ -7,7 +7,6 @@ from codebase.models import (
     UserSession,
     AppSession
 )
-from codebase.utils.sqlalchemy import dbc
 from codebase.utils.swaggerui import api
 from codebase.utils.token import decode_token
 
