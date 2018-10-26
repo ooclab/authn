@@ -94,12 +94,6 @@ class SingleAppHandler(_BaseSingleAppHandler):
             is_active = body.pop("is_active")
             if is_active in [False, True]:
                 app.is_active = is_active
-            else:
-                if is_active is not None:
-                    raise HTTPError(400, reason="unknown-value:is_active")
-        if body:
-            params = ",".join(list(body.keys()))
-            raise HTTPError(400, reason=f"unknown-params:{params}")
         if params_count > 0:
             app.updated = datetime.datetime.utcnow()
             self.db.commit()
