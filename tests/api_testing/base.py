@@ -1,7 +1,6 @@
 # pylint: disable=R0903
 
 import json
-import uuid
 import logging
 
 import tornado.testing
@@ -85,7 +84,11 @@ class BaseTestCase(tornado.testing.AsyncHTTPTestCase):
         super().setUp()
         dbc.create_all()
 
-        self.current_user = User(uuid=str(uuid.uuid4()))
+        self.current_username = "ooclab"
+        self.current_password = "ffffff"
+        self.current_user = User(
+            username=self.current_username,
+            password=self.current_password)
         self.db.add(self.current_user)
         self.db.commit()
 
