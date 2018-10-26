@@ -25,9 +25,6 @@ class DBC:
         session_factory = sessionmaker(bind=self.dbengine)
         self.session = scoped_session(session_factory)
 
-    def remove(self):
-        self.session.remove()
-
     def create_all(self):
         # TODO: session.remove() 保证不会死锁
         self.session.remove()
