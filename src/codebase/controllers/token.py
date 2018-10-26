@@ -112,6 +112,7 @@ class UserTokenRefreshHandler(APIRequestHandler):
 
         # TODO: 如果用户的 refresh_token 还未过期（至少到下一次需要刷新时），无需新建
         if session.expires_in < expires_in:
+            self.db.delete(session)
             session = UserSession(user)
             self.db.add(session)
             self.db.commit()

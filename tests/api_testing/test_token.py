@@ -154,7 +154,8 @@ class UserGetTokenRefresh(_Base):
         session.expires_in = datetime.datetime.utcnow()
         self.db.commit()
 
-        resp = self.api_get(f"/user/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_get(
+            f"/user/token/refresh?refresh_token={refresh_token}")
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -177,7 +178,8 @@ class UserGetTokenRefresh(_Base):
         self.current_user.is_active = False
         self.db.commit()
 
-        resp = self.api_get(f"/user/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_get(
+            f"/user/token/refresh?refresh_token={refresh_token}")
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -193,7 +195,8 @@ class UserGetTokenRefresh(_Base):
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
 
-        resp = self.api_get(f"/user/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_get(
+            f"/user/token/refresh?refresh_token={refresh_token}")
         self.assertEqual(resp.code, 200)
         self.validate_default_success(body)
 
@@ -203,6 +206,35 @@ class UserGetTokenRefresh(_Base):
         data = body["data"]
         payload = decode_token(data["access_token"])
         self.assertEqual(payload["uid"], str(self.current_user.uuid))
+
+    def test_refresh_token_session_expires(self):
+        """用户刷新 access_token 时遇到会话过期
+        """
+        password = "password"
+        user = User(username="username", password=password)
+        self.db.add(user)
+        self.db.commit()
+
+        resp = self.api_post("/user/token", body={
+            "username": user.username,
+            "password": password,
+        })
+        body = get_body_json(resp)
+        refresh_token = body["data"]["refresh_token"]
+
+        for session in self.db.query(UserSession).filter_by(
+                user_id=user.id).all():
+            session.expires_in = (
+                datetime.datetime.utcnow() + datetime.timedelta(seconds=60))
+
+        resp = self.api_get(
+            f"/user/token/refresh?refresh_token={refresh_token}")
+        self.assertEqual(resp.code, 200)
+
+        sessions = self.db.query(UserSession).filter_by(user_id=user.id)
+        self.assertEqual(sessions.count(), 1)
+        session = sessions.first()
+        self.assertNotEqual(session.refresh_token, refresh_token)
 
 
 class AppGetToken(_Base):
@@ -237,7 +269,8 @@ class AppGetToken(_Base):
         """
         self.current_user.is_active = False
         api_secret = "secret"
-        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        app = App(user=self.current_user,
+                  name="fortest", api_secret=api_secret)
         self.db.add(app)
         self.db.commit()
         resp = self.api_get(f"/app/{app.uuid}/token?api_secret={api_secret}")
@@ -250,7 +283,8 @@ class AppGetToken(_Base):
         """App 被禁用
         """
         api_secret = "secret"
-        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        app = App(user=self.current_user,
+                  name="fortest", api_secret=api_secret)
         app.is_active = False
         self.db.add(app)
         self.db.commit()
@@ -264,7 +298,8 @@ class AppGetToken(_Base):
         """获取 token 成功
         """
         api_secret = "secret"
-        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        app = App(user=self.current_user,
+                  name="fortest", api_secret=api_secret)
         self.db.add(app)
         self.db.commit()
 
@@ -293,7 +328,8 @@ class AppGetTokenRefresh(_Base):
         self.db.commit()
 
         for token in [None, "", "notexist"]:
-            resp = self.api_get(f"/app/{app.uuid}/token/refresh?refresh_token={token}")
+            resp = self.api_get(
+                f"/app/{app.uuid}/token/refresh?refresh_token={token}")
             body = get_body_json(resp)
             self.assertEqual(resp.code, 400)
             validate_default_error(body)
@@ -303,7 +339,8 @@ class AppGetTokenRefresh(_Base):
         """会话过期
         """
         api_secret = "secret"
-        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        app = App(user=self.current_user,
+                  name="fortest", api_secret=api_secret)
         self.db.add(app)
         self.db.commit()
         app_id = str(app.uuid)
@@ -327,7 +364,8 @@ class AppGetTokenRefresh(_Base):
         """用户被禁用
         """
         api_secret = "secret"
-        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        app = App(user=self.current_user,
+                  name="fortest", api_secret=api_secret)
         self.db.add(app)
         self.db.commit()
         app_id = str(app.uuid)
@@ -354,7 +392,8 @@ class AppGetTokenRefresh(_Base):
         """App 被禁用
         """
         api_secret = "secret"
-        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        app = App(user=self.current_user,
+                  name="fortest", api_secret=api_secret)
         self.db.add(app)
         self.db.commit()
         app_id = str(app.uuid)
@@ -379,7 +418,8 @@ class AppGetTokenRefresh(_Base):
         """刷新成功
         """
         api_secret = "secret"
-        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        app = App(user=self.current_user,
+                  name="fortest", api_secret=api_secret)
         self.db.add(app)
         self.db.commit()
         app_id = str(app.uuid)
