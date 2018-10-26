@@ -2,7 +2,8 @@ from tornado.web import url
 
 from codebase.controllers import (
     default,
-    user
+    user,
+    app
 )
 
 
@@ -21,4 +22,9 @@ HANDLERS = [
     url(r"/user/"
         r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
         user.SingleUserHandler),
+
+    # App
+
+    url(r"/app",
+        app.AppHandler),
 ]

@@ -183,7 +183,6 @@ paths:
     - $ref: '#/parameters/Authorization'
 
     get:
-      deprecated: true
       tags:
       - app
       summary: 查看我的所有App
@@ -195,15 +194,17 @@ paths:
             schema:
               type: object
               required:
+              - status
               - data
               properties:
+                status:
+                  $ref: '#/definitions/Status'
                 data:
                   type: array
                   items:
                     $ref: '#/definitions/AppSimple'
 
     post:
-      deprecated: true
       tags:
       - app
       summary: 创建我的App
@@ -234,17 +235,14 @@ paths:
             description:
               type: string
               description: 详细描述
+            is_active:
+              type: boolean
+              description: 是否启用
       responses:
         "200":
           description: OK
           schema:
-            type: object
-            required:
-              - id
-            properties:
-              id:
-                type: integer
-                description: 成功创建的 App ID
+            $ref: '#/definitions/ObjectCreateSuccess'
         default:
           description: |
             返回错误信息
@@ -450,6 +448,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/DefaultSuccessResponse'
         default:
           description: |
             返回错误信息
@@ -477,6 +477,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/DefaultSuccessResponse'
         default:
           description: |
             返回错误信息
@@ -508,7 +510,7 @@ definitions:
       id:
         type: string
         format: uuid
-        description: 成功创建的权限ID
+        description: 成功创建的对象ID
 
   DefaultSuccessResponse:
     type: object

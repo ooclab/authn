@@ -146,7 +146,7 @@ class App(ORMBase):
     @property
     def isimple(self):
         return {
-            "api_id": str(self.uuid),
+            "id": str(self.uuid),
             "is_active": self.is_active,
             "name": self.name,
             "summary": self.summary,
@@ -155,7 +155,7 @@ class App(ORMBase):
     @property
     def ifull(self):
         return {
-            "app_id": str(self.uuid),
+            "id": str(self.uuid),
             "is_active": self.is_active,
             "name": self.name,
             "summary": self.summary,
