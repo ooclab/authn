@@ -324,6 +324,31 @@ class AppGetTokenRefresh(_Base):
         validate_default_error(body)
         self.assertEqual(body["status"], "user-inactive")
 
+    def test_app_inactive(self):
+        """App 被禁用
+        """
+        api_secret = "secret"
+        app = App(user=self.current_user, name="fortest", api_secret=api_secret)
+        self.db.add(app)
+        self.db.commit()
+        app_id = str(app.uuid)
+
+        resp = self.api_get(f"/app/{app_id}/token?api_secret={api_secret}")
+        body = get_body_json(resp)
+        refresh_token = body["data"]["refresh_token"]
+
+        del app
+        app = self.db.query(App).filter_by(uuid=app_id).first()
+        app.is_active = False
+        self.db.commit()
+
+        resp = self.api_get(
+            f"/app/{app_id}/token/refresh?refresh_token={refresh_token}")
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 400)
+        validate_default_error(body)
+        self.assertEqual(body["status"], "user-inactive")
+
     def test_refresh_token_success(self):
         """刷新成功
         """
