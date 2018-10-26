@@ -422,7 +422,6 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     post:
-      deprecated: true
       tags:
       - user
       summary: 更新用户信息
@@ -460,7 +459,6 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     delete:
-      deprecated: true
       tags:
       - user
       summary: 删除指定用户
