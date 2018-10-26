@@ -1,3 +1,6 @@
+from yaml import safe_load
+from swagger_spec_validator.util import get_validator
+
 from .base import BaseTestCase
 
 
@@ -15,12 +18,15 @@ class HealthTestCase(BaseTestCase):
 
 
 class SpecTestCase(BaseTestCase):
-    """GET / - SwaggerUI 文档
+    """GET /_spec - SwaggerUI 文档
     """
 
     def test_spec(self):
         """返回正确
         """
 
-        resp = self.fetch("/")
+        resp = self.fetch("/_spec")
         self.assertEqual(resp.code, 200)
+        spec_json = safe_load(resp.body)
+        validator = get_validator(spec_json)
+        validator.validate_spec(spec_json)
