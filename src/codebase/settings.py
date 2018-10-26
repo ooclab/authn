@@ -14,16 +14,18 @@ ADMIN_PASSWORD = "ooclab"
 
 # 用户 session 默认有效期为2天
 USER_SESSION_AGE = 2 * 24 * 3600
-# 客户端 session 默认有效期为30天
-CLIENT_SESSION_AGE = 30 * 24 * 3600
+# 客户端 session 默认有效期为365天
+CLIENT_SESSION_AGE = 365 * 24 * 3600
 # 客户端最大并行会话数量（通过 refresh_token 仅能限制允许刷新）
-MAX_SESSION = 5
+MAX_SESSION_PER_USER = 6
 
 # APP
 MAX_APP = 5
 
-# access_token 默认有效期为2小时
-ACCESS_TOKEN_AGE = 2 * 3600
+# User access_token 默认有效期为2小时
+USER_ACCESS_TOKEN_AGE = 2 * 3600
+# App access_token 默认有效期为30天
+APP_ACCESS_TOKEN_AGE = 30 * 24 * 3600
 
 # Authorization server（AS）
 # [OpenID Connect 认证](https://help.aliyun.com/document_detail/48019.html)

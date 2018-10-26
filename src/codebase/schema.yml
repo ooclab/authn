@@ -29,7 +29,7 @@ schemes:
 
 tags:
 - name: token
-  description: Token
+  description: 获取 / 刷新 access_token
 - name: app
   description: App
 - name: user
@@ -58,18 +58,18 @@ paths:
         "200":
           description: 返回 YAML 文档
 
-  "/signin":
+  "/user/token":
 
     post:
-      deprecated: true
       tags:
       - token
-      summary: 用户登录（获取 token）
-      description: 用户登录，获取 Token (JWT)
-      consumes:
-      - application/json
-      produces:
-      - application/json
+      summary: 通过用户名和密码获取 token
+      description: |
+        用户登录，获取 Token (JWT)
+
+        应用场景：
+        1. 传统Web服务（如MVC）：通常是其他服务（如 `account`），调用该接口获取用户的 token ，然后封装为自己的 Session , 以 cookies 形式返回给用户端（如浏览器）
+        2. 现代浏览器端页面渲染技术（如ReactJS/VueJS）：Web 前端可以直接调用该接口获取 token ，保存在浏览器端，后面需要验证的请求带上该 token 即可
       parameters:
       - name: body
         in: body
@@ -90,7 +90,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ResponseTokenData'
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/ResponseTokenData'
         default:
           description: |
             返回错误信息
@@ -101,39 +109,83 @@ paths:
           schema:
             $ref: '#/definitions/DefaultErrorResponse'
 
-  "/token":
+  "/user/token/refresh":
 
-    post:
-      deprecated: true
+    get:
       tags:
       - token
-      summary: App 登录（获取 token）
+      summary: 刷新用户的 token
+      description: |
+        用户或App都可以通过 refresh_token 刷新 access_token
+      parameters:
+      - name: token
+        in: query
+        required: true
+        type: string
+        description: refresh token
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/ResponseTokenData'
+        default:
+          description: |
+            返回错误信息
+
+            error 值及含义：
+            - `need-refresh-token` : 请求未提供 `refresh_token` 参数
+            - `invalid-refresh-token` : 提供了无效的 `refresh_token`
+            - `is-expired` : `refresh_token` 已经过期，请重新“登录”
+            - `user-inactive` : 用户已被禁用，请联系管理员
+            - `invalid-access-type` : 应该不会出现
+          schema:
+            $ref: '#/definitions/DefaultErrorResponse'
+
+  "/app/{id}/token":
+
+    get:
+      tags:
+      - token
+      summary: 应用获取 token
       description: |
         通过 App 获取 access_token ，结果与使用用户名和密码登录的方式一样。
         区别：
         1. 一个用户可以拥有多个 App，每个 App 有自己的认证凭证，适合在不同场合使用
         2. App 获取的 access_token 有效期比普通登录的方式要长
       parameters:
-      - name: body
-        in: body
-        description: 请求数据
-        schema:
-          type: object
-          required:
-            - api_key
-            - api_secret
-          properties:
-            api_key:
-              type: string
-              description: The Api Key
-            api_secret:
-              type: string
-              description: The Api Secret
+      - name: id
+        in: path
+        required: true
+        type: string
+        format: uuid
+        description: 应用ID
+      - name: api_secret
+        in: query
+        required: true
+        type: string
+        maxLength: 128
+        description: 应用密钥
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ResponseTokenData'
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/ResponseTokenData'
         default:
           description: |
             返回错误信息
@@ -145,25 +197,39 @@ paths:
           schema:
             $ref: '#/definitions/DefaultErrorResponse'
 
-  "/token/refresh":
+  "/app/{id}/token/refresh":
 
     get:
-      deprecated: true
       tags:
       - token
       summary: 刷新 token
       description: |
         用户或App都可以通过 refresh_token 刷新 access_token
       parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+        format: uuid
+        description: 应用ID
       - name: refresh_token
         in: query
+        required: true
         type: string
-        description: 刷新 token
+        description: refresh token
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/ResponseTokenData'
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/ResponseTokenData'
         default:
           description: |
             返回错误信息
@@ -190,19 +256,19 @@ paths:
         用户查看自己的所有 App
       responses:
         "200":
-            description: OK
-            schema:
-              type: object
-              required:
-              - status
-              - data
-              properties:
-                status:
-                  $ref: '#/definitions/Status'
-                data:
-                  type: array
-                  items:
-                    $ref: '#/definitions/AppSimple'
+          description: OK
+          schema:
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/AppSimple'
 
     post:
       tags:
