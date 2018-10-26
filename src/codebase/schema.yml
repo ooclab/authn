@@ -61,6 +61,7 @@ paths:
   "/signin":
 
     post:
+      deprecated: true
       tags:
       - token
       summary: 用户登录（获取 token）
@@ -103,6 +104,7 @@ paths:
   "/token":
 
     post:
+      deprecated: true
       tags:
       - token
       summary: App 登录（获取 token）
@@ -146,6 +148,7 @@ paths:
   "/token/refresh":
 
     get:
+      deprecated: true
       tags:
       - token
       summary: 刷新 token
@@ -180,6 +183,7 @@ paths:
     - $ref: '#/parameters/Authorization'
 
     get:
+      deprecated: true
       tags:
       - app
       summary: 查看我的所有App
@@ -199,6 +203,7 @@ paths:
                     $ref: '#/definitions/AppSimple'
 
     post:
+      deprecated: true
       tags:
       - app
       summary: 创建我的App
@@ -262,6 +267,7 @@ paths:
       description: 应用ID
 
     get:
+      deprecated: true
       tags:
       - app
       summary: 查看指定应用详情
@@ -279,6 +285,7 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     post:
+      deprecated: true
       tags:
       - app
       summary: 更新指定应用属性
@@ -321,6 +328,7 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     delete:
+      deprecated: true
       tags:
       - app
       summary: 删除指定应用
@@ -391,6 +399,7 @@ paths:
       description: 用户UID
 
     get:
+      deprecated: true
       tags:
       - user
       summary: 查看用户信息
@@ -410,6 +419,7 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     post:
+      deprecated: true
       tags:
       - user
       summary: 更新用户信息
@@ -447,6 +457,7 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     delete:
+      deprecated: true
       tags:
       - user
       summary: 删除指定用户
