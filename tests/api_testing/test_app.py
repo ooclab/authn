@@ -1,3 +1,5 @@
+import uuid
+
 from sqlalchemy import and_
 
 from codebase.models import User, App
@@ -49,7 +51,7 @@ class AppList(_Base):
             api_secret="secret"
         ))
         self.db.commit()
-        self.assertEqual(self.db.query(App).count(), app_total+1)
+        self.assertEqual(self.db.query(App).count(), app_total + 1)
 
         resp = self.api_get("/app")
         body = get_body_json(resp)
@@ -59,7 +61,7 @@ class AppList(_Base):
         self.assertEqual(len(body["data"]), app_total)
         self.assertEqual(
             sorted([item["name"] for item in body["data"]]),
-            sorted(["testapp"+str(i) for i in range(app_total)])
+            sorted(["testapp" + str(i) for i in range(app_total)])
         )
 
 
@@ -130,3 +132,176 @@ class AppCreate(_Base):
         self.assertEqual(request_body["summary"], app.summary)
         self.assertEqual(request_body["description"], app.description)
         self.assertEqual(request_body["is_active"], app.is_active)
+
+
+class AppView(_Base):
+    """GET /app/{id} - 查看我的 App
+    """
+
+    def test_not_found(self):
+        """App 不存在
+        """
+
+        app_id = str(uuid.uuid4())
+        resp = self.api_get(f"/app/{app_id}")
+        self.validate_not_found(resp)
+
+    def test_not_my_app(self):
+        """不是我的 App
+        """
+        user = User(username="username", password="password")
+        self.db.add(user)
+        self.db.commit()
+        app = App(user=user, name="app", api_secret="secret")
+        self.db.add(app)
+        self.db.commit()
+
+        resp = self.api_get(f"/app/{app.uuid}")
+        self.validate_not_found(resp)
+
+    def test_view_success(self):
+        """查看成功
+        """
+        app = App(
+            user=self.current_user,
+            name="app",
+            api_secret="secret",
+            summary="summary",
+            description="description"
+        )
+        self.db.add(app)
+        self.db.commit()
+
+        resp = self.api_get(f"/app/{app.uuid}")
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 200)
+        self.validate_default_success(body)
+
+        spec = self.rs.get_app_id.op_spec["responses"]["200"]["schema"]
+        api.validate_object(spec, body)
+
+        data = body["data"]
+        self.assertEqual(data["id"], str(app.uuid))
+        self.assertEqual(data["name"], app.name)
+        self.assertEqual(data["summary"], app.summary)
+        self.assertEqual(data["description"], app.description)
+        self.assertEqual(data["is_active"], app.is_active)
+
+
+class AppUpdate(_Base):
+    """POST /app/{id} - 更新我的 App
+    """
+
+    def test_not_found(self):
+        """App 不存在
+        """
+
+        app_id = str(uuid.uuid4())
+        resp = self.api_post(f"/app/{app_id}")
+        self.validate_not_found(resp)
+
+    def test_not_my_app(self):
+        """不是我的 App
+        """
+        user = User(username="username", password="password")
+        self.db.add(user)
+        self.db.commit()
+        app = App(user=user, name="app", api_secret="secret")
+        self.db.add(app)
+        self.db.commit()
+
+        resp = self.api_post(f"/app/{app.uuid}")
+        self.validate_not_found(resp)
+
+    def test_update_success(self):
+        """更新成功
+        """
+        app = App(user=self.current_user, name="app", api_secret="secret")
+        self.db.add(app)
+        self.db.commit()
+        app_id = str(app.uuid)
+        api_secret = "secret:new"
+        request_body = {
+            "name": app.name + ":new",
+            "api_secret": api_secret,
+            "summary": "add summary",
+            "description": "add description",
+            "is_active": False,
+        }
+        self.assertEqual(app.is_active, True)
+
+        resp = self.api_post(f"/app/{app_id}", body=request_body)
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 200)
+        self.validate_default_success(body)
+
+        del app
+        app = self.db.query(App).filter_by(uuid=app_id).one()
+        self.assertEqual(app.validate_secret(api_secret), True)
+        self.assertEqual(app.name, request_body["name"])
+        self.assertEqual(app.summary, request_body["summary"])
+        self.assertEqual(app.description, request_body["description"])
+        self.assertEqual(app.is_active, request_body["is_active"])
+
+    def test_name_exist(self):
+        """App 名称存在
+        """
+        app1 = App(user=self.current_user, name="app1", api_secret="secret")
+        self.db.add(app1)
+        app2 = App(user=self.current_user, name="app2", api_secret="secret")
+        self.db.add(app2)
+        self.db.commit()
+
+        resp = self.api_post(f"/app/{app1.uuid}", body={"name": app2.name})
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 400)
+        validate_default_error(body)
+        self.assertEqual(body["status"], "name-exist")
+
+
+class AppDelete(_Base):
+    """DELETE /app/{id} - 删除我的 App
+    """
+
+    def test_not_found(self):
+        """App 不存在
+        """
+
+        app_id = str(uuid.uuid4())
+        resp = self.api_delete(f"/app/{app_id}")
+        self.validate_not_found(resp)
+
+    def test_not_my_app(self):
+        """不是我的 App
+        """
+        user = User(username="username", password="password")
+        self.db.add(user)
+        self.db.commit()
+        app = App(user=user, name="app", api_secret="secret")
+        self.db.add(app)
+        self.db.commit()
+
+        resp = self.api_delete(f"/app/{app.uuid}")
+        self.validate_not_found(resp)
+
+    def test_delete_success(self):
+        """删除成功
+        """
+        user = User(username="username", password="password")
+        self.db.add(user)
+        app1 = App(user=user, name="app1", api_secret="secret")
+        self.db.add(app1)
+        app2 = App(user=self.current_user, name="app2", api_secret="secret")
+        self.db.add(app2)
+        self.db.commit()
+
+        app2_id = str(app2.uuid)
+        resp = self.api_delete(f"/app/{app2_id}")
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 200)
+        self.validate_default_success(body)
+
+        del app2
+        self.assertEqual(self.db.query(App).count(), 1)
+        app = self.db.query(App).filter_by(uuid=app2_id).first()
+        self.assertIsNone(app)

@@ -27,4 +27,8 @@ HANDLERS = [
 
     url(r"/app",
         app.AppHandler),
+
+    url(r"/app/"
+        r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        app.SingleAppHandler),
 ]

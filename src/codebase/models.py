@@ -4,7 +4,6 @@ import datetime
 import uuid
 import string
 
-from tornado.web import HTTPError
 from sqlalchemy_utils import UUIDType
 from eva.conf import settings
 from eva.utils.time_ import utc_rfc3339_string
@@ -107,38 +106,8 @@ class App(ORMBase):
         if is_active in [False, True]:
             self.is_active = is_active
 
-    def update(self, **kwargs):
-        orig_length = len(kwargs)
-
-        if "name" in kwargs:
-            name = kwargs.pop("name")
-            # !important! 用户所有的 app 中， name 是否存在请提前检查
-            self.name = name
-
-        if "api_secret" in kwargs:
-            self.api_secret = encrypt_password(kwargs.pop("api_secret"))
-
-        if "is_active" in kwargs:
-            is_active = kwargs.pop("is_active")
-            if is_active in [False, True]:
-                self.is_active = is_active
-            else:
-                if is_active is not None:
-                    raise HTTPError(400, reason="unknown-value:is_active")
-
-        if "summary" in kwargs:
-            self.summary = kwargs.pop("summary")
-
-        if "description" in kwargs:
-            self.description = kwargs.pop("description")
-
-        # TODO: 如果有额外参数，是否报错？
-        if kwargs:
-            params = ",".join(list(kwargs.keys()))
-            raise HTTPError(400, reason=f"unknown-params:{params}")
-
-        if orig_length > 0:
-            self.updated = datetime.datetime.utcnow()
+    def set_secret(self, raw_secret):
+        self.api_secret = encrypt_password(raw_secret)
 
     def validate_secret(self, raw_api_secret):
         return check_password(raw_api_secret, self.api_secret)

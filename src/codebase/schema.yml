@@ -265,7 +265,6 @@ paths:
       description: 应用ID
 
     get:
-      deprecated: true
       tags:
       - app
       summary: 查看指定应用详情
@@ -273,7 +272,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/App'
+            type: object
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/App'
         default:
           description: |
             返回错误信息
@@ -283,7 +287,6 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     post:
-      deprecated: true
       tags:
       - app
       summary: 更新指定应用属性
@@ -316,6 +319,8 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/DefaultSuccessResponse'
         default:
           description: |
             返回错误信息
@@ -326,13 +331,14 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
     delete:
-      deprecated: true
       tags:
       - app
       summary: 删除指定应用
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/DefaultSuccessResponse'
         default:
           description: |
             返回错误信息
@@ -598,7 +604,6 @@ definitions:
       **提示** `api_key` 这里显示, `api_secret` 由用户创建时提供，数据库不存放原始密码，因此无法显示，需要用户自行记录。
     required:
     - id
-    - api_key
     - is_active
     - name
     - summary
@@ -607,9 +612,6 @@ definitions:
         type: string
         format: uuid
         description: ID
-      api_key:
-        type: string
-        description: Key
       is_active:
         type: boolean
         description: 是否启用
@@ -625,10 +627,10 @@ definitions:
     description: 用户（自己的）App详情
     required:
     - id
-    - api_key
     - is_active
     - name
     - summary
+    - description
     - created
     - updated
     properties:
@@ -636,9 +638,6 @@ definitions:
         type: string
         format: uuid
         description: ID
-      api_key:
-        type: string
-        description: Key
       is_active:
         type: boolean
         description: 是否启用
