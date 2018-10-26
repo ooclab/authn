@@ -45,18 +45,6 @@ class User(ORMBase):
         self.username = username
         self.password = encrypt_password(password)
 
-    def update(self, username=None, password=None, is_active=None):
-        if username:
-            # !important! 请提前检查用户名是否存在
-            self.username = username
-        if password:
-            self.password = encrypt_password(password)
-        has_is_active = is_active in [False, True]
-        if has_is_active:
-            self.is_active = is_active
-        if username or password or has_is_active:
-            self.updated = datetime.datetime.utcnow()
-
     def validate_password(self, raw_password):
         """
         Returns a boolean of whether the raw_password was correct. Handles

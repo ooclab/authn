@@ -18,7 +18,7 @@ HANDLERS = [
     url(r"/user",
         user.UserHandler),
 
-    # url(r"/role/"
-    #     r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
-    #     role.SingleRoleHandler),
+    url(r"/user/"
+        r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
+        user.SingleUserHandler),
 ]

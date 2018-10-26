@@ -374,11 +374,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: object
-            properties:
-              uid:
-                type: string
-                description: 成功创建的用户 UID
+            $ref: '#/definitions/ObjectCreateSuccess'
         default:
           description: |
             返回错误信息
@@ -399,7 +395,6 @@ paths:
       description: 用户UID
 
     get:
-      deprecated: true
       tags:
       - user
       summary: 查看用户信息
@@ -409,7 +404,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/User'
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/User'
         default:
           description: |
             返回错误信息
@@ -486,6 +489,38 @@ paths:
 
 
 definitions:
+
+  Status:
+    type: string
+    description: |
+      接口请求结果
+
+      - `success` 表示成功
+      - 其他表示错误
+    default: "success"
+
+  ObjectCreateSuccess:
+    type: object
+    required:
+    - id
+    - status
+    properties:
+      status:
+        $ref: '#/definitions/Status'
+      id:
+        type: string
+        format: uuid
+        description: 成功创建的权限ID
+
+  DefaultSuccessResponse:
+    type: object
+    required:
+    - status
+    properties:
+      status:
+        type: string
+        description: 接口调用结果
+        default: "success"
 
   ResponseTokenData:
     type: object
