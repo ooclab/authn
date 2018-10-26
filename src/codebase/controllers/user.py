@@ -7,7 +7,6 @@ from sqlalchemy import and_
 
 from codebase.web import APIRequestHandler
 from codebase.models import User
-from codebase.utils.enc import encrypt_password
 
 
 class UserHandler(APIRequestHandler):
@@ -66,7 +65,7 @@ class SingleUserHandler(_BaseSingleUserHandler):
                 return
             user.username = username
         if password:
-            user.password = encrypt_password(password)
+            user.set_password(password)
         has_is_active = is_active in [False, True]
         if has_is_active:
             user.is_active = is_active

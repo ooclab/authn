@@ -60,10 +60,7 @@ class UserViewTestCase(_Base):
 
         user_id = str(uuid.uuid4())
         resp = self.api_get(f"/user/{user_id}")
-        body = get_body_json(resp)
-        self.assertEqual(resp.code, 400)
-        validate_default_error(body)
-        self.assertEqual(body["status"], "not-found")
+        self.validate_not_found(resp)
 
     def test_view_success(self):
         """查看成功
@@ -90,10 +87,7 @@ class UserUpdateTestCase(_Base):
 
         user_id = str(uuid.uuid4())
         resp = self.api_post(f"/user/{user_id}")
-        body = get_body_json(resp)
-        self.assertEqual(resp.code, 400)
-        validate_default_error(body)
-        self.assertEqual(body["status"], "not-found")
+        self.validate_not_found(resp)
 
     def test_update_success(self):
         """更新成功
@@ -161,10 +155,7 @@ class UserDeleteTestCase(_Base):
 
         user_id = str(uuid.uuid4())
         resp = self.api_delete(f"/user/{user_id}")
-        body = get_body_json(resp)
-        self.assertEqual(resp.code, 400)
-        validate_default_error(body)
-        self.assertEqual(body["status"], "not-found")
+        self.validate_not_found(resp)
 
     def test_delete_success(self):
         """删除成功

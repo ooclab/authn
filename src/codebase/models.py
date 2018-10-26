@@ -56,10 +56,6 @@ class User(ORMBase):
         self.password = encrypt_password(raw_password)
 
     @property
-    def isimple(self):
-        return {"id": str(self.uuid), "username": self.username}
-
-    @property
     def ifull(self):
         return {
             "id": str(self.uuid),
