@@ -347,7 +347,7 @@ class AppGetTokenRefresh(_Base):
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
-        self.assertEqual(body["status"], "user-inactive")
+        self.assertEqual(body["status"], "app-inactive")
 
     def test_refresh_token_success(self):
         """刷新成功
