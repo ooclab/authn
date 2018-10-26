@@ -32,7 +32,7 @@ def clean_session(db, user):
             continue
         # 限制 refresh_token 数量
         # TODO: 清理顺序应该是清理最新的还是最旧的？
-        if i > settings.MAX_SESSION_PER_USER:
+        if i >= settings.MAX_SESSION_PER_USER - 1:
             db.delete(session)
 
 

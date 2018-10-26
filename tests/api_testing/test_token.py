@@ -1,6 +1,8 @@
 import datetime
 import uuid
 
+from eva.conf import settings
+
 from codebase.models import (
     User,
     App,
@@ -83,6 +85,17 @@ class UserCreateToken(_Base):
         data = body["data"]
         payload = decode_token(data["access_token"])
         self.assertEqual(payload["uid"], str(self.current_user.uuid))
+
+    def test_most_session_clean(self):
+        self.assertEqual(0, self.db.query(UserSession).count())
+        for _ in range(settings.MAX_SESSION_PER_USER + 10):
+            resp = self.api_post("/user/token", body={
+                "username": self.current_username,
+                "password": self.current_password,
+            })
+            self.assertEqual(resp.code, 200)
+        self.assertEqual(
+            settings.MAX_SESSION_PER_USER, self.db.query(UserSession).count())
 
 
 class UserGetTokenRefresh(_Base):
