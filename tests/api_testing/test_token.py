@@ -87,6 +87,8 @@ class UserCreateToken(_Base):
         self.assertEqual(payload["uid"], str(self.current_user.uuid))
 
     def test_most_session_clean(self):
+        """用户会话数量限制
+        """
         self.assertEqual(0, self.db.query(UserSession).count())
         for _ in range(settings.MAX_SESSION_PER_USER + 10):
             resp = self.api_post("/user/token", body={
@@ -96,6 +98,30 @@ class UserCreateToken(_Base):
             self.assertEqual(resp.code, 200)
         self.assertEqual(
             settings.MAX_SESSION_PER_USER, self.db.query(UserSession).count())
+
+    def test_most_sessions_expired(self):
+        """用户会话过期
+        """
+        self.assertEqual(0, self.db.query(UserSession).count())
+        for _ in range(settings.MAX_SESSION_PER_USER + 10):
+            resp = self.api_post("/user/token", body={
+                "username": self.current_username,
+                "password": self.current_password,
+            })
+            self.assertEqual(resp.code, 200)
+
+        for session in self.db.query(UserSession):
+            session.expires_in = datetime.datetime.utcnow()
+        self.db.commit()
+        self.assertEqual(6, self.db.query(UserSession).count())
+
+        resp = self.api_post("/user/token", body={
+            "username": self.current_username,
+            "password": self.current_password,
+        })
+        self.assertEqual(resp.code, 200)
+
+        self.assertEqual(1, self.db.query(UserSession).count())
 
 
 class UserGetTokenRefresh(_Base):
