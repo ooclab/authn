@@ -118,7 +118,7 @@ paths:
       description: |
         用户或App都可以通过 refresh_token 刷新 access_token
       parameters:
-      - name: token
+      - name: refresh_token
         in: query
         required: true
         type: string
