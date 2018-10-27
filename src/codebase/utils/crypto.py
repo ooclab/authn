@@ -14,7 +14,6 @@ def generate_keys(key_size=2048):
         crypto_serialization.PrivateFormat.PKCS8,
         crypto_serialization.NoEncryption())
     public_key = key.public_key().public_bytes(
-        crypto_serialization.Encoding.OpenSSH,
-        crypto_serialization.PublicFormat.OpenSSH
-    )
+        crypto_serialization.Encoding.PEM,
+        crypto_serialization.PublicFormat.SubjectPublicKeyInfo)
     return private_key, public_key
