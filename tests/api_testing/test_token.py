@@ -124,8 +124,8 @@ class UserCreateToken(_Base):
         self.assertEqual(1, self.db.query(UserSession).count())
 
 
-class UserGetTokenRefresh(_Base):
-    """GET /user/token/refresh - 用户刷新 access_token
+class UserTokenRefresh(_Base):
+    """POST /user/token/refresh - 用户刷新 access_token
     """
 
     def test_refresh_token_invalid(self):
@@ -133,7 +133,9 @@ class UserGetTokenRefresh(_Base):
         """
 
         for token in [None, "", "notexist"]:
-            resp = self.api_get(f"/user/token/refresh?refresh_token={token}")
+            resp = self.api_post("/user/token/refresh", body={
+                "refresh_token": token,
+            })
             body = get_body_json(resp)
             self.assertEqual(resp.code, 400)
             validate_default_error(body)
@@ -154,8 +156,9 @@ class UserGetTokenRefresh(_Base):
         session.expires_in = datetime.datetime.utcnow()
         self.db.commit()
 
-        resp = self.api_get(
-            f"/user/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/user/token/refresh", body={
+            "refresh_token": refresh_token,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -178,8 +181,9 @@ class UserGetTokenRefresh(_Base):
         self.current_user.is_active = False
         self.db.commit()
 
-        resp = self.api_get(
-            f"/user/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/user/token/refresh", body={
+            "refresh_token": refresh_token,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -195,12 +199,13 @@ class UserGetTokenRefresh(_Base):
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
 
-        resp = self.api_get(
-            f"/user/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/user/token/refresh", body={
+            "refresh_token": refresh_token,
+        })
         self.assertEqual(resp.code, 200)
         self.validate_default_success(body)
 
-        spec = self.rs.get_user_token_refresh.op_spec["responses"]["200"]["schema"]
+        spec = self.rs.post_user_token_refresh.op_spec["responses"]["200"]["schema"]
         api.validate_object(spec, body)
 
         data = body["data"]
@@ -227,8 +232,9 @@ class UserGetTokenRefresh(_Base):
             session.expires_in = (
                 datetime.datetime.utcnow() + datetime.timedelta(seconds=60))
 
-        resp = self.api_get(
-            f"/user/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/user/token/refresh", body={
+            "refresh_token": refresh_token,
+        })
         self.assertEqual(resp.code, 200)
 
         sessions = self.db.query(UserSession).filter_by(user_id=user.id)
@@ -237,15 +243,15 @@ class UserGetTokenRefresh(_Base):
         self.assertNotEqual(session.refresh_token, refresh_token)
 
 
-class AppGetToken(_Base):
-    """GET /app/{id}/token - App 获取 access_token
+class AppCreateToken(_Base):
+    """POST /app/{id}/token - App 获取 access_token
     """
 
     def test_app_id_invalid(self):
         """App ID 无效
         """
         app_id = str(uuid.uuid4())
-        resp = self.api_get(f"/app/{app_id}/token")
+        resp = self.api_post("/app/token", body={"app_id": app_id})
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -254,11 +260,14 @@ class AppGetToken(_Base):
     def test_app_secret_invalid(self):
         """app_secret 错误
         """
-        app = App(user=self.current_user, name="fortest", api_secret="secret")
+        app = App(user=self.current_user, name="fortest", app_secret="secret")
         self.db.add(app)
         self.db.commit()
 
-        resp = self.api_get(f"/app/{app.uuid}/token?api_secret=wrong")
+        resp = self.api_post("/app/token", body={
+            "app_id": str(app.app_id),
+            "app_secret": "wrong",
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -268,12 +277,15 @@ class AppGetToken(_Base):
         """用户被禁用
         """
         self.current_user.is_active = False
-        api_secret = "secret"
+        app_secret = "secret"
         app = App(user=self.current_user,
-                  name="fortest", api_secret=api_secret)
+                  name="fortest", app_secret=app_secret)
         self.db.add(app)
         self.db.commit()
-        resp = self.api_get(f"/app/{app.uuid}/token?api_secret={api_secret}")
+        resp = self.api_post("/app/token", body={
+            "app_id": str(app.app_id),
+            "app_secret": app_secret,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -282,13 +294,16 @@ class AppGetToken(_Base):
     def test_app_inactive(self):
         """App 被禁用
         """
-        api_secret = "secret"
+        app_secret = "secret"
         app = App(user=self.current_user,
-                  name="fortest", api_secret=api_secret)
+                  name="fortest", app_secret=app_secret)
         app.is_active = False
         self.db.add(app)
         self.db.commit()
-        resp = self.api_get(f"/app/{app.uuid}/token?api_secret={api_secret}")
+        resp = self.api_post("/app/token", body={
+            "app_id": str(app.app_id),
+            "app_secret": app_secret,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -297,18 +312,21 @@ class AppGetToken(_Base):
     def test_get_token_success(self):
         """获取 token 成功
         """
-        api_secret = "secret"
+        app_secret = "secret"
         app = App(user=self.current_user,
-                  name="fortest", api_secret=api_secret)
+                  name="fortest", app_secret=app_secret)
         self.db.add(app)
         self.db.commit()
 
-        resp = self.api_get(f"/app/{app.uuid}/token?api_secret={api_secret}")
+        resp = self.api_post("/app/token", body={
+            "app_id": str(app.app_id),
+            "app_secret": app_secret,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 200)
         self.validate_default_success(body)
 
-        spec = self.rs.get_app_id_token.op_spec["responses"]["200"]["schema"]
+        spec = self.rs.post_app_token.op_spec["responses"]["200"]["schema"]
         api.validate_object(spec, body)
 
         data = body["data"]
@@ -316,20 +334,22 @@ class AppGetToken(_Base):
         self.assertEqual(payload["uid"], str(self.current_user.uuid))
 
 
-class AppGetTokenRefresh(_Base):
-    """GET /app/{id}/token/refresh - App 刷新 access_token
+class AppTokenRefresh(_Base):
+    """POST /app/{id}/token/refresh - App 刷新 access_token
     """
 
     def test_refresh_token_invalid(self):
         """无效的 refresh token
         """
-        app = App(user=self.current_user, name="fortest", api_secret="secret")
+        app = App(user=self.current_user, name="fortest", app_secret="secret")
         self.db.add(app)
         self.db.commit()
 
         for token in [None, "", "notexist"]:
-            resp = self.api_get(
-                f"/app/{app.uuid}/token/refresh?refresh_token={token}")
+            resp = self.api_post("/app/token/refresh", body={
+                "app_id": str(app.app_id),
+                "refresh_token": token,
+            })
             body = get_body_json(resp)
             self.assertEqual(resp.code, 400)
             validate_default_error(body)
@@ -338,14 +358,17 @@ class AppGetTokenRefresh(_Base):
     def test_session_is_expired(self):
         """会话过期
         """
-        api_secret = "secret"
+        app_secret = "secret"
         app = App(user=self.current_user,
-                  name="fortest", api_secret=api_secret)
+                  name="fortest", app_secret=app_secret)
         self.db.add(app)
         self.db.commit()
-        app_id = str(app.uuid)
+        app_id = str(str(app.app_id))
 
-        resp = self.api_get(f"/app/{app_id}/token?api_secret={api_secret}")
+        resp = self.api_post("/app/token", body={
+            "app_id": app_id,
+            "app_secret": app_secret,
+        })
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
         session = self.db.query(AppSession).filter_by(
@@ -353,8 +376,10 @@ class AppGetTokenRefresh(_Base):
         session.expires_in = datetime.datetime.utcnow()
         self.db.commit()
 
-        resp = self.api_get(
-            f"/app/{app_id}/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/app/token/refresh", body={
+            "app_id": app_id,
+            "refresh_token": refresh_token,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -363,14 +388,17 @@ class AppGetTokenRefresh(_Base):
     def test_user_inactive(self):
         """用户被禁用
         """
-        api_secret = "secret"
+        app_secret = "secret"
         app = App(user=self.current_user,
-                  name="fortest", api_secret=api_secret)
+                  name="fortest", app_secret=app_secret)
         self.db.add(app)
         self.db.commit()
-        app_id = str(app.uuid)
+        app_id = str(str(app.app_id))
 
-        resp = self.api_get(f"/app/{app_id}/token?api_secret={api_secret}")
+        resp = self.api_post("/app/token", body={
+            "app_id": app_id,
+            "app_secret": app_secret,
+        })
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
 
@@ -381,8 +409,10 @@ class AppGetTokenRefresh(_Base):
         self.current_user.is_active = False
         self.db.commit()
 
-        resp = self.api_get(
-            f"/app/{app_id}/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/app/token/refresh", body={
+            "app_id": app_id,
+            "refresh_token": refresh_token,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -391,24 +421,29 @@ class AppGetTokenRefresh(_Base):
     def test_app_inactive(self):
         """App 被禁用
         """
-        api_secret = "secret"
+        app_secret = "secret"
         app = App(user=self.current_user,
-                  name="fortest", api_secret=api_secret)
+                  name="fortest", app_secret=app_secret)
         self.db.add(app)
         self.db.commit()
-        app_id = str(app.uuid)
+        app_id = str(str(app.app_id))
 
-        resp = self.api_get(f"/app/{app_id}/token?api_secret={api_secret}")
+        resp = self.api_post("/app/token", body={
+            "app_id": app_id,
+            "app_secret": app_secret,
+        })
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
 
         del app
-        app = self.db.query(App).filter_by(uuid=app_id).first()
+        app = self.db.query(App).filter_by(app_id=app_id).first()
         app.is_active = False
         self.db.commit()
 
-        resp = self.api_get(
-            f"/app/{app_id}/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/app/token/refresh", body={
+            "app_id": app_id,
+            "refresh_token": refresh_token,
+        })
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -417,23 +452,28 @@ class AppGetTokenRefresh(_Base):
     def test_refresh_token_success(self):
         """刷新成功
         """
-        api_secret = "secret"
+        app_secret = "secret"
         app = App(user=self.current_user,
-                  name="fortest", api_secret=api_secret)
+                  name="fortest", app_secret=app_secret)
         self.db.add(app)
         self.db.commit()
-        app_id = str(app.uuid)
+        app_id = str(str(app.app_id))
 
-        resp = self.api_get(f"/app/{app_id}/token?api_secret={api_secret}")
+        resp = self.api_post("/app/token", body={
+            "app_id": app_id,
+            "app_secret": app_secret,
+        })
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
 
-        resp = self.api_get(
-            f"/app/{app_id}/token/refresh?refresh_token={refresh_token}")
+        resp = self.api_post("/app/token/refresh", body={
+            "app_id": app_id,
+            "refresh_token": refresh_token,
+        })
         self.assertEqual(resp.code, 200)
         self.validate_default_success(body)
 
-        spec = self.rs.get_user_token_refresh.op_spec["responses"]["200"]["schema"]
+        spec = self.rs.post_user_token_refresh.op_spec["responses"]["200"]["schema"]
         api.validate_object(spec, body)
 
         data = body["data"]

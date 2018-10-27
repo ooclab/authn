@@ -24,14 +24,10 @@ HANDLERS = [
     url(r"/user/token/refresh",
         token.UserTokenRefreshHandler),
 
-    url(r"/app/"
-        r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
-        "/token",
+    url(r"/app/token",
         token.SingleAppTokenHandler),
 
-    url(r"/app/"
-        r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})"
-        "/token/refresh",
+    url(r"/app/token/refresh",
         token.SingleAppTokenRefreshHandler),
 
     # User

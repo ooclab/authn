@@ -111,18 +111,24 @@ paths:
 
   "/user/token/refresh":
 
-    get:
+    post:
       tags:
       - token
       summary: 刷新用户的 token
       description: |
         用户或App都可以通过 refresh_token 刷新 access_token
       parameters:
-      - name: refresh_token
-        in: query
-        required: true
-        type: string
-        description: refresh token
+      - name: body
+        in: body
+        description: 请求数据
+        schema:
+          type: object
+          required:
+          - refresh_token
+          properties:
+            refresh_token:
+              type: string
+              description: refresh token
       responses:
         "200":
           description: OK
@@ -149,30 +155,35 @@ paths:
           schema:
             $ref: '#/definitions/DefaultErrorResponse'
 
-  "/app/{id}/token":
+  "/app/token":
 
-    get:
+    post:
       tags:
       - token
       summary: 应用获取 token
       description: |
-        通过 App 获取 access_token ，结果与使用用户名和密码登录的方式一样。
+        应用程序获取 access_token ，结果与使用用户名和密码登录的方式一样。
         区别：
         1. 一个用户可以拥有多个 App，每个 App 有自己的认证凭证，适合在不同场合使用
         2. App 获取的 access_token 有效期比普通登录的方式要长
       parameters:
-      - name: id
-        in: path
-        required: true
-        type: string
-        format: uuid
-        description: 应用ID
-      - name: api_secret
-        in: query
-        required: true
-        type: string
-        maxLength: 128
-        description: 应用密钥
+      - name: body
+        in: body
+        description: 请求数据
+        schema:
+          type: object
+          required:
+          - app_id
+          - app_secret
+          properties:
+            app_id:
+              type: string
+              format: uuid
+              description: 应用ID
+            app_secret:
+              type: string
+              description: 应用密钥
+              maxLength: 128
       responses:
         "200":
           description: OK
@@ -197,26 +208,31 @@ paths:
           schema:
             $ref: '#/definitions/DefaultErrorResponse'
 
-  "/app/{id}/token/refresh":
+  "/app/token/refresh":
 
-    get:
+    post:
       tags:
       - token
       summary: 刷新 token
       description: |
         用户或App都可以通过 refresh_token 刷新 access_token
       parameters:
-      - name: id
-        in: path
-        required: true
-        type: string
-        format: uuid
-        description: 应用ID
-      - name: refresh_token
-        in: query
-        required: true
-        type: string
-        description: refresh token
+      - name: body
+        in: body
+        description: 请求数据
+        schema:
+          type: object
+          required:
+          - app_id
+          - refresh_token
+          properties:
+            app_id:
+              type: string
+              format: uuid
+              description: 应用ID
+            refresh_token:
+              type: string
+              description: refresh token
       responses:
         "200":
           description: OK
@@ -648,7 +664,7 @@ definitions:
       id:
         type: string
         format: uuid
-        description: ID
+        description: 应用ID
       is_active:
         type: boolean
         description: 是否启用
@@ -669,15 +685,15 @@ definitions:
     description: |
       **提示** `api_key` 这里显示, `api_secret` 由用户创建时提供，数据库不存放原始密码，因此无法显示，需要用户自行记录。
     required:
-    - id
+    - app_id
     - is_active
     - name
     - summary
     properties:
-      id:
+      app_id:
         type: string
         format: uuid
-        description: ID
+        description: 应用ID
       is_active:
         type: boolean
         description: 是否启用
@@ -692,7 +708,7 @@ definitions:
     type: object
     description: 用户（自己的）App详情
     required:
-    - id
+    - app_id
     - is_active
     - name
     - summary
@@ -700,7 +716,7 @@ definitions:
     - created
     - updated
     properties:
-      id:
+      app_id:
         type: string
         format: uuid
         description: ID

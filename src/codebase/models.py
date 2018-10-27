@@ -80,8 +80,8 @@ class App(ORMBase):
     user_id = Column(Integer, ForeignKey("authn_user.id"))  # 创建用户 ID
     user = relationship("User", backref="apps")
 
-    uuid = Column(UUIDType(), default=uuid.uuid4, unique=True)
-    api_secret = Column(String(256), nullable=False)
+    app_id = Column(UUIDType(), default=uuid.uuid4, unique=True)
+    app_secret = Column(String(256), nullable=False)
 
     # 方便用户自行管理的属性
     name = Column(String(128), unique=True)
@@ -94,11 +94,11 @@ class App(ORMBase):
     updated = Column(DateTime(), default=datetime.datetime.utcnow)
 
     def __init__(
-            self, user, name, api_secret,
+            self, user, name, app_secret,
             summary=None, description=None, is_active=None):
         self.user_id = user.id
         self.name = name
-        self.api_secret = encrypt_password(api_secret)
+        self.app_secret = encrypt_password(app_secret)
         if summary:
             self.summary = summary
         if description:
@@ -107,15 +107,15 @@ class App(ORMBase):
             self.is_active = is_active
 
     def set_secret(self, raw_secret):
-        self.api_secret = encrypt_password(raw_secret)
+        self.app_secret = encrypt_password(raw_secret)
 
-    def validate_secret(self, raw_api_secret):
-        return check_password(raw_api_secret, self.api_secret)
+    def validate_secret(self, raw_app_secret):
+        return check_password(raw_app_secret, self.app_secret)
 
     @property
     def isimple(self):
         return {
-            "id": str(self.uuid),
+            "app_id": str(self.app_id),
             "is_active": self.is_active,
             "name": self.name,
             "summary": self.summary,
@@ -124,7 +124,7 @@ class App(ORMBase):
     @property
     def ifull(self):
         return {
-            "id": str(self.uuid),
+            "app_id": str(self.app_id),
             "is_active": self.is_active,
             "name": self.name,
             "summary": self.summary,

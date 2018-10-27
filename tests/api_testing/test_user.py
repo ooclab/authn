@@ -171,13 +171,13 @@ class UserDeleteTestCase(_Base):
             app = App(
                 user=user,
                 name="testapp" + str(i),
-                api_secret="secret"
+                app_secret="secret"
             )
             self.db.add(app)
         self.db.add(App(
             user=self.current_user,
             name="anotherapp",
-            api_secret="secret"
+            app_secret="secret"
         ))
         self.db.commit()
         self.assertEqual(self.db.query(App).count(), app_total+1)

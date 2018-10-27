@@ -36,21 +36,21 @@ class AppHandler(APIRequestHandler):
         app = App(
             user=self.current_user,
             name=name,
-            api_secret=body["api_secret"],
+            app_secret=body["app_secret"],
             summary=body.get("summary"),
             description=body.get("description"),
             is_active=body.get("is_active")
         )
         self.db.add(app)
         self.db.commit()
-        self.success(id=str(app.uuid))
+        self.success(id=str(app.app_id))
 
 
 class _BaseSingleAppHandler(APIRequestHandler):
 
     def get_app(self, _id):
         app = self.db.query(App).filter(and_(
-            App.uuid == _id,
+            App.app_id == _id,
             App.user_id == self.current_user.id
         )).first()
         if not app:
@@ -84,8 +84,8 @@ class SingleAppHandler(_BaseSingleAppHandler):
                 self.fail("name-exist")
                 return
             app.name = name
-        if "api_secret" in body:
-            app.set_secret(body.pop("api_secret"))
+        if "app_secret" in body:
+            app.set_secret(body.pop("app_secret"))
         if "summary" in body:
             app.summary = body.pop("summary")
         if "description" in body:

@@ -80,11 +80,12 @@ class UserTokenHandler(APIRequestHandler):
 
 class UserTokenRefreshHandler(APIRequestHandler):
 
-    def get(self):
+    def post(self):
         """
         用户通过 refresh_token 获取新的 access_token
         """
-        refresh_token = self.get_query_argument("refresh_token")
+        body = self.get_body_json()
+        refresh_token = body["refresh_token"]
 
         session = self.db.query(UserSession).filter_by(
             refresh_token=refresh_token).first()
@@ -127,7 +128,7 @@ class UserTokenRefreshHandler(APIRequestHandler):
 class _BaseSingleAppHandler(APIRequestHandler):
 
     def get_app(self, _id):
-        app = self.db.query(App).filter_by(uuid=_id).first()
+        app = self.db.query(App).filter_by(app_id=_id).first()
         if not app:
             raise HTTPError(400, reason="incorrect-app-id")
         return app
@@ -135,14 +136,16 @@ class _BaseSingleAppHandler(APIRequestHandler):
 
 class SingleAppTokenHandler(_BaseSingleAppHandler):
 
-    def get(self, _id):
+    def post(self):
         """App “登录”
         """
-        app = self.get_app(_id)
-        api_secret = self.get_query_argument("api_secret")
+        body = self.get_body_json()
+        app_id = body["app_id"]
+        app = self.get_app(app_id)
+        app_secret = body["app_secret"]
 
         # 错误的 api_secret
-        if not app.validate_secret(api_secret):
+        if not app.validate_secret(app_secret):
             self.fail("incorrect-app-id-or-secret")
             return
 
@@ -176,12 +179,14 @@ class SingleAppTokenHandler(_BaseSingleAppHandler):
 
 class SingleAppTokenRefreshHandler(_BaseSingleAppHandler):
 
-    def get(self, _id):
+    def post(self):
         """
         应用通过 refresh_token 获取新的 access_token
         """
-        app = self.get_app(_id)
-        refresh_token = self.get_query_argument("refresh_token")
+        body = self.get_body_json()
+        app_id = body["app_id"]
+        refresh_token = body["refresh_token"]
+        app = self.get_app(app_id)
 
         session = self.db.query(AppSession).filter_by(
             refresh_token=refresh_token).first()
