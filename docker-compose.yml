@@ -7,7 +7,7 @@ services:
         tty: true
         command: bash
         environment:
-            DB_URI: "postgresql://root:password@postgres:5432/mydb"
+            DB_URI: "postgresql+pg8000://root:password@postgres:5432/authn"
         ports:
             - "3000:3000"
         volumes:
@@ -16,7 +16,7 @@ services:
     postgres:
         image: postgres:10.5
         environment:
-            POSTGRES_DB: mydb
+            POSTGRES_DB: authn
             POSTGRES_USER: root
             POSTGRES_PASSWORD: password
         # volumes:
