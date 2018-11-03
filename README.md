@@ -1,6 +1,6 @@
-# AuthN
+# ga.authn
 
-[![Build Status](https://travis-ci.com/ooclab/authn.svg?branch=master)](https://travis-ci.com/ooclab/authn)
-[![codecov](https://codecov.io/gh/ooclab/authn/branch/master/graph/badge.svg)](https://codecov.io/gh/ooclab/authn)
+[![Build Status](https://travis-ci.com/ooclab/ga.authn.svg?branch=master)](https://travis-ci.com/ooclab/ga.authn)
+[![codecov](https://codecov.io/gh/ooclab/ga.authn/branch/master/graph/badge.svg)](https://codecov.io/gh/ooclab/ga.authn)
 
-The authentication (authn) service for service-oriented architecture
+The authentication (ga.authn) service for service-oriented architecture
