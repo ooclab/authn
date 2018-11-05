@@ -24,10 +24,10 @@ HANDLERS = [
     url(r"/user/token/refresh",
         token.UserTokenRefreshHandler),
 
-    url(r"/app/token",
+    url(r"/app_token",
         token.SingleAppTokenHandler),
 
-    url(r"/app/token/refresh",
+    url(r"/app_token/refresh",
         token.SingleAppTokenRefreshHandler),
 
     # User

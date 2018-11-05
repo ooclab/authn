@@ -210,7 +210,7 @@
 					"response": []
 				},
 				{
-					"name": "/app/token - 获取我的 App Token",
+					"name": "/app_token - 获取我的 App Token",
 					"event": [
 						{
 							"listen": "test",
@@ -252,7 +252,7 @@
 							"raw": "{\n\t\"app_id\": \"{{MY_APP_ID}}\",\n\t\"app_secret\": \"{{MY_APP_SECRET}}\"\n}"
 						},
 						"url": {
-							"raw": "{{URL_PREFIX}}/app/token",
+							"raw": "{{URL_PREFIX}}/app_token",
 							"host": [
 								"{{URL_PREFIX}}"
 							],
@@ -265,7 +265,7 @@
 					"response": []
 				},
 				{
-					"name": "/app/token - 刷新我的 App Token",
+					"name": "/app_token - 刷新我的 App Token",
 					"event": [
 						{
 							"listen": "test",
@@ -307,7 +307,7 @@
 							"raw": "{\n\t\"app_id\": \"{{MY_APP_ID}}\",\n\t\"refresh_token\": \"{{APP_REFRESH_TOKEN}}\"\n}"
 						},
 						"url": {
-							"raw": "{{URL_PREFIX}}/app/token/refresh",
+							"raw": "{{URL_PREFIX}}/app_token/refresh",
 							"host": [
 								"{{URL_PREFIX}}"
 							],

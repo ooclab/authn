@@ -251,7 +251,7 @@ class AppCreateToken(_Base):
         """App ID 无效
         """
         app_id = str(uuid.uuid4())
-        resp = self.api_post("/app/token", body={"app_id": app_id})
+        resp = self.api_post("/app_token", body={"app_id": app_id})
         body = get_body_json(resp)
         self.assertEqual(resp.code, 400)
         validate_default_error(body)
@@ -264,7 +264,7 @@ class AppCreateToken(_Base):
         self.db.add(app)
         self.db.commit()
 
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": str(app.app_id),
             "app_secret": "wrong",
         })
@@ -282,7 +282,7 @@ class AppCreateToken(_Base):
                   name="fortest", app_secret=app_secret)
         self.db.add(app)
         self.db.commit()
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": str(app.app_id),
             "app_secret": app_secret,
         })
@@ -300,7 +300,7 @@ class AppCreateToken(_Base):
         app.is_active = False
         self.db.add(app)
         self.db.commit()
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": str(app.app_id),
             "app_secret": app_secret,
         })
@@ -318,7 +318,7 @@ class AppCreateToken(_Base):
         self.db.add(app)
         self.db.commit()
 
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": str(app.app_id),
             "app_secret": app_secret,
         })
@@ -346,7 +346,7 @@ class AppTokenRefresh(_Base):
         self.db.commit()
 
         for token in [None, "", "notexist"]:
-            resp = self.api_post("/app/token/refresh", body={
+            resp = self.api_post("/app_token/refresh", body={
                 "app_id": str(app.app_id),
                 "refresh_token": token,
             })
@@ -365,7 +365,7 @@ class AppTokenRefresh(_Base):
         self.db.commit()
         app_id = str(str(app.app_id))
 
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": app_id,
             "app_secret": app_secret,
         })
@@ -376,7 +376,7 @@ class AppTokenRefresh(_Base):
         session.expires_in = datetime.datetime.utcnow()
         self.db.commit()
 
-        resp = self.api_post("/app/token/refresh", body={
+        resp = self.api_post("/app_token/refresh", body={
             "app_id": app_id,
             "refresh_token": refresh_token,
         })
@@ -395,7 +395,7 @@ class AppTokenRefresh(_Base):
         self.db.commit()
         app_id = str(str(app.app_id))
 
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": app_id,
             "app_secret": app_secret,
         })
@@ -409,7 +409,7 @@ class AppTokenRefresh(_Base):
         self.current_user.is_active = False
         self.db.commit()
 
-        resp = self.api_post("/app/token/refresh", body={
+        resp = self.api_post("/app_token/refresh", body={
             "app_id": app_id,
             "refresh_token": refresh_token,
         })
@@ -428,7 +428,7 @@ class AppTokenRefresh(_Base):
         self.db.commit()
         app_id = str(str(app.app_id))
 
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": app_id,
             "app_secret": app_secret,
         })
@@ -440,7 +440,7 @@ class AppTokenRefresh(_Base):
         app.is_active = False
         self.db.commit()
 
-        resp = self.api_post("/app/token/refresh", body={
+        resp = self.api_post("/app_token/refresh", body={
             "app_id": app_id,
             "refresh_token": refresh_token,
         })
@@ -459,14 +459,14 @@ class AppTokenRefresh(_Base):
         self.db.commit()
         app_id = str(str(app.app_id))
 
-        resp = self.api_post("/app/token", body={
+        resp = self.api_post("/app_token", body={
             "app_id": app_id,
             "app_secret": app_secret,
         })
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
 
-        resp = self.api_post("/app/token/refresh", body={
+        resp = self.api_post("/app_token/refresh", body={
             "app_id": app_id,
             "refresh_token": refresh_token,
         })

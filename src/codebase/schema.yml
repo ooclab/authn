@@ -155,7 +155,7 @@ paths:
           schema:
             $ref: '#/definitions/DefaultErrorResponse'
 
-  "/app/token":
+  "/app_token":
 
     post:
       tags:
@@ -208,7 +208,7 @@ paths:
           schema:
             $ref: '#/definitions/DefaultErrorResponse'
 
-  "/app/token/refresh":
+  "/app_token/refresh":
 
     post:
       tags:
