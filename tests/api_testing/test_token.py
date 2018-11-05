@@ -26,14 +26,14 @@ class _Base(BaseTestCase):
 
 
 class UserCreateToken(_Base):
-    """POST /user/token - 用户获取 access_token
+    """POST /token - 用户获取 access_token
     """
 
     def test_username_invalid(self):
         """用户名错误
         """
 
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": "notexist",
             "password": "password",
         })
@@ -45,7 +45,7 @@ class UserCreateToken(_Base):
     def test_password_invalid(self):
         """密码错误
         """
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": self.current_user.username,
             "password": "wrong",
         })
@@ -59,7 +59,7 @@ class UserCreateToken(_Base):
         """
         self.current_user.is_active = False
         self.db.commit()
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": self.current_username,
             "password": self.current_password,
         })
@@ -71,7 +71,7 @@ class UserCreateToken(_Base):
     def test_get_token_success(self):
         """获取 token 成功
         """
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": self.current_username,
             "password": self.current_password,
         })
@@ -79,7 +79,7 @@ class UserCreateToken(_Base):
         self.assertEqual(resp.code, 200)
         self.validate_default_success(body)
 
-        spec = self.rs.post_user_token.op_spec["responses"]["200"]["schema"]
+        spec = self.rs.post_token.op_spec["responses"]["200"]["schema"]
         api.validate_object(spec, body)
 
         data = body["data"]
@@ -91,7 +91,7 @@ class UserCreateToken(_Base):
         """
         self.assertEqual(0, self.db.query(UserSession).count())
         for _ in range(settings.MAX_SESSION_PER_USER + 10):
-            resp = self.api_post("/user/token", body={
+            resp = self.api_post("/token", body={
                 "username": self.current_username,
                 "password": self.current_password,
             })
@@ -104,7 +104,7 @@ class UserCreateToken(_Base):
         """
         self.assertEqual(0, self.db.query(UserSession).count())
         for _ in range(settings.MAX_SESSION_PER_USER + 10):
-            resp = self.api_post("/user/token", body={
+            resp = self.api_post("/token", body={
                 "username": self.current_username,
                 "password": self.current_password,
             })
@@ -115,7 +115,7 @@ class UserCreateToken(_Base):
         self.db.commit()
         self.assertEqual(6, self.db.query(UserSession).count())
 
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": self.current_username,
             "password": self.current_password,
         })
@@ -125,7 +125,7 @@ class UserCreateToken(_Base):
 
 
 class UserTokenRefresh(_Base):
-    """POST /user/token/refresh - 用户刷新 access_token
+    """POST /token/refresh - 用户刷新 access_token
     """
 
     def test_refresh_token_invalid(self):
@@ -133,7 +133,7 @@ class UserTokenRefresh(_Base):
         """
 
         for token in [None, "", "notexist"]:
-            resp = self.api_post("/user/token/refresh", body={
+            resp = self.api_post("/token/refresh", body={
                 "refresh_token": token,
             })
             body = get_body_json(resp)
@@ -145,7 +145,7 @@ class UserTokenRefresh(_Base):
         """会话过期
         """
 
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": self.current_username,
             "password": self.current_password,
         })
@@ -156,7 +156,7 @@ class UserTokenRefresh(_Base):
         session.expires_in = datetime.datetime.utcnow()
         self.db.commit()
 
-        resp = self.api_post("/user/token/refresh", body={
+        resp = self.api_post("/token/refresh", body={
             "refresh_token": refresh_token,
         })
         body = get_body_json(resp)
@@ -167,7 +167,7 @@ class UserTokenRefresh(_Base):
     def test_user_inactive(self):
         """用户被禁用
         """
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": self.current_username,
             "password": self.current_password,
         })
@@ -181,7 +181,7 @@ class UserTokenRefresh(_Base):
         self.current_user.is_active = False
         self.db.commit()
 
-        resp = self.api_post("/user/token/refresh", body={
+        resp = self.api_post("/token/refresh", body={
             "refresh_token": refresh_token,
         })
         body = get_body_json(resp)
@@ -192,20 +192,20 @@ class UserTokenRefresh(_Base):
     def test_refresh_token_success(self):
         """刷新成功
         """
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": self.current_username,
             "password": self.current_password,
         })
         body = get_body_json(resp)
         refresh_token = body["data"]["refresh_token"]
 
-        resp = self.api_post("/user/token/refresh", body={
+        resp = self.api_post("/token/refresh", body={
             "refresh_token": refresh_token,
         })
         self.assertEqual(resp.code, 200)
         self.validate_default_success(body)
 
-        spec = self.rs.post_user_token_refresh.op_spec["responses"]["200"]["schema"]
+        spec = self.rs.post_token_refresh.op_spec["responses"]["200"]["schema"]
         api.validate_object(spec, body)
 
         data = body["data"]
@@ -220,7 +220,7 @@ class UserTokenRefresh(_Base):
         self.db.add(user)
         self.db.commit()
 
-        resp = self.api_post("/user/token", body={
+        resp = self.api_post("/token", body={
             "username": user.username,
             "password": password,
         })
@@ -232,7 +232,7 @@ class UserTokenRefresh(_Base):
             session.expires_in = (
                 datetime.datetime.utcnow() + datetime.timedelta(seconds=60))
 
-        resp = self.api_post("/user/token/refresh", body={
+        resp = self.api_post("/token/refresh", body={
             "refresh_token": refresh_token,
         })
         self.assertEqual(resp.code, 200)
@@ -473,7 +473,7 @@ class AppTokenRefresh(_Base):
         self.assertEqual(resp.code, 200)
         self.validate_default_success(body)
 
-        spec = self.rs.post_user_token_refresh.op_spec["responses"]["200"]["schema"]
+        spec = self.rs.post_token_refresh.op_spec["responses"]["200"]["schema"]
         api.validate_object(spec, body)
 
         data = body["data"]

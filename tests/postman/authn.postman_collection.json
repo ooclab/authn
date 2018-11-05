@@ -52,7 +52,7 @@
 					"response": []
 				},
 				{
-					"name": "/user/token - 获取 access_token",
+					"name": "/token - 获取 access_token",
 					"event": [
 						{
 							"listen": "test",
@@ -91,7 +91,7 @@
 							"raw": "{\n\t\"username\": \"{{USERNAME}}\",\n\t\"password\": \"{{PASSWORD}}\"\n}"
 						},
 						"url": {
-							"raw": "{{URL_PREFIX}}/user/token",
+							"raw": "{{URL_PREFIX}}/token",
 							"host": [
 								"{{URL_PREFIX}}"
 							],
@@ -104,7 +104,7 @@
 					"response": []
 				},
 				{
-					"name": "/user/token/refresh - 刷新 access_token",
+					"name": "/token/refresh - 刷新 access_token",
 					"event": [
 						{
 							"listen": "test",
@@ -143,7 +143,7 @@
 							"raw": "{\n\t\"refresh_token\": \"{{REFRESH_TOKEN}}\"\n}"
 						},
 						"url": {
-							"raw": "{{URL_PREFIX}}/user/token/refresh",
+							"raw": "{{URL_PREFIX}}/token/refresh",
 							"host": [
 								"{{URL_PREFIX}}"
 							],
