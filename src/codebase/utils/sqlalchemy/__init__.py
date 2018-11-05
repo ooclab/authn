@@ -8,7 +8,7 @@ import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.exc import OperationalError, InterfaceError
+from sqlalchemy.exc import OperationalError, InterfaceError, ProgrammingError
 
 from eva.conf import settings
 
@@ -46,8 +46,9 @@ class DBC:
             try:
                 self.engine.execute('SELECT 1')
                 break
-            except (OperationalError, InterfaceError):
+            except (OperationalError, InterfaceError, ProgrammingError):
                 # InterfaceError 是 db 还没启动，拒绝连接的异常
+                # ProgrammingError the database system is starting up
                 time.sleep(1)
                 logging.info("wait database is online")
 
