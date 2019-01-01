@@ -2,6 +2,7 @@
 
 import logging
 
+from sqlalchemy import and_
 from eva.conf import settings
 from eva.management.common import EvaManagementCommand
 
@@ -14,7 +15,7 @@ class Command(EvaManagementCommand):
     def __init__(self):
         super(Command, self).__init__()
 
-        self.cmd = "createadminapp"
+        self.cmd = "renewadminapp"
         self.help = "创建管理员的 app"
 
     def run(self):
@@ -26,11 +27,20 @@ class Command(EvaManagementCommand):
                 "can not find admin account (%s)", settings.ADMIN_USERNAME)
             return
 
+        app_name = "adminapp"
         app_secret = randomstring(32)
-        app = App(user=admin, name="createadminapp", app_secret=app_secret)
-        db.add(app)
-        db.commit()
 
-        print(f"Create Admin App Success:\n"
+        app = db.query(App).filter(
+            and_(App.user_id == admin.id, App.name == app_name)).first()
+        if app:
+            app.set_secret(app_secret)
+        else:
+            app = App(user=admin, name=app_name, app_secret=app_secret)
+            db.add(app)
+            db.commit()
+
+        print(f"Update admin app success:\n"
+              f"username={admin.username}\n"
+              f"user_id={admin.uuid}\n"
               f"app_id={app.app_id}\n"
               f"app_secret={app_secret}")
