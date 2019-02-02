@@ -72,6 +72,7 @@ class UserTokenHandler(APIRequestHandler):
         self.db.commit()
 
         self.success(data={
+            "uid": str(user.uuid),
             "access_token": gen_token(user, expires_in),
             "expires_in": utc_rfc3339_string(expires_in),
             "refresh_token": session.refresh_token,
@@ -119,6 +120,7 @@ class UserTokenRefreshHandler(APIRequestHandler):
             self.db.commit()
 
         self.success(data={
+            "uid": str(user.uuid),
             "access_token": gen_token(user, expires_in),
             "expires_in": utc_rfc3339_string(expires_in),
             "refresh_token": session.refresh_token,
@@ -171,6 +173,7 @@ class SingleAppTokenHandler(_BaseSingleAppHandler):
         self.db.commit()
 
         self.success(data={
+            "uid": str(user.uuid),
             "access_token": gen_token(user, expires_in),
             "expires_in": utc_rfc3339_string(expires_in),
             "refresh_token": session.refresh_token,
@@ -224,6 +227,7 @@ class SingleAppTokenRefreshHandler(_BaseSingleAppHandler):
             self.db.commit()
 
         self.success(data={
+            "uid": str(user.uuid),
             "access_token": gen_token(user, expires_in),
             "expires_in": utc_rfc3339_string(expires_in),
             "refresh_token": session.refresh_token,

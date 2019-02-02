@@ -613,10 +613,15 @@ definitions:
   ResponseTokenData:
     type: object
     required:
+    - uid
     - access_token
     - expires_in
     - refresh_token
     properties:
+      uid:
+        type: string
+        format: uuid
+        description: 用户 ID
       access_token:
         type: string
         description: jwt 格式的 token, 用户访问凭证
