@@ -32,7 +32,7 @@ def clean_session(db, user):
             continue
         # 限制 refresh_token 数量
         # TODO: 清理顺序应该是清理最新的还是最旧的？
-        if i >= settings.MAX_SESSION_PER_USER - 1:
+        if i >= int(settings.MAX_SESSION_PER_USER) - 1:
             db.delete(session)
 
 
@@ -64,7 +64,7 @@ class UserTokenHandler(APIRequestHandler):
 
         # 验证成功
         expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.USER_ACCESS_TOKEN_AGE
+            seconds=int(settings.USER_ACCESS_TOKEN_AGE)
         )
         clean_session(self.db, user)
         session = UserSession(user)
@@ -109,7 +109,7 @@ class UserTokenRefreshHandler(APIRequestHandler):
 
         # 验证成功
         expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.USER_ACCESS_TOKEN_AGE
+            seconds=int(settings.USER_ACCESS_TOKEN_AGE)
         )
 
         # TODO: 如果用户的 refresh_token 还未过期（至少到下一次需要刷新时），无需新建
@@ -165,7 +165,7 @@ class SingleAppTokenHandler(_BaseSingleAppHandler):
 
         # 验证成功
         expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.APP_ACCESS_TOKEN_AGE
+            seconds=int(settings.APP_ACCESS_TOKEN_AGE)
         )
         clean_session(self.db, user)
         session = AppSession(app)
@@ -217,7 +217,7 @@ class SingleAppTokenRefreshHandler(_BaseSingleAppHandler):
 
         # 验证成功
         expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.APP_ACCESS_TOKEN_AGE
+            seconds=int(settings.APP_ACCESS_TOKEN_AGE)
         )
 
         # TODO: 如果用户的 refresh_token 还未过期（至少到下一次需要刷新时），无需新建

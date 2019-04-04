@@ -19,7 +19,7 @@ class NotApiTestCase(BaseTestCase):
         self.db.commit()
 
         expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.APP_ACCESS_TOKEN_AGE
+            seconds=int(settings.APP_ACCESS_TOKEN_AGE)
         )
         tok = gen_token(user, expired=expires_in)
 

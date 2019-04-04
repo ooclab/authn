@@ -155,7 +155,7 @@ class UserSession(ORMBase):
         self.refresh_token = randomstring(
             128, scope=string.ascii_letters + string.digits)
         self.expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.USER_SESSION_AGE
+            seconds=int(settings.USER_SESSION_AGE)
         )
 
     @property
@@ -184,7 +184,7 @@ class AppSession(ORMBase):
         self.refresh_token = randomstring(
             128, scope=string.ascii_letters + string.digits)
         self.expires_in = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=settings.USER_SESSION_AGE
+            seconds=int(settings.USER_SESSION_AGE)
         )
 
     @property

@@ -19,6 +19,8 @@ from .base import (
     get_body_json
 )
 
+MAX_SESSION_PER_USER = int(settings.MAX_SESSION_PER_USER)
+
 
 class _Base(BaseTestCase):
 
@@ -90,20 +92,20 @@ class UserCreateToken(_Base):
         """用户会话数量限制
         """
         self.assertEqual(0, self.db.query(UserSession).count())
-        for _ in range(settings.MAX_SESSION_PER_USER + 10):
+        for _ in range(MAX_SESSION_PER_USER + 10):
             resp = self.api_post("/token", body={
                 "username": self.current_username,
                 "password": self.current_password,
             })
             self.assertEqual(resp.code, 200)
         self.assertEqual(
-            settings.MAX_SESSION_PER_USER, self.db.query(UserSession).count())
+            MAX_SESSION_PER_USER, self.db.query(UserSession).count())
 
     def test_most_sessions_expired(self):
         """用户会话过期
         """
         self.assertEqual(0, self.db.query(UserSession).count())
-        for _ in range(settings.MAX_SESSION_PER_USER + 10):
+        for _ in range(MAX_SESSION_PER_USER + 10):
             resp = self.api_post("/token", body={
                 "username": self.current_username,
                 "password": self.current_password,
