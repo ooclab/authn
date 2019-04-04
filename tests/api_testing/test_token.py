@@ -481,3 +481,43 @@ class AppTokenRefresh(_Base):
         data = body["data"]
         payload = decode_token(data["access_token"])
         self.assertEqual(payload["uid"], str(self.current_user.uuid))
+
+
+class CreateOpenToken(_Base):
+    """POST /open_token - 直接获取 access_token
+    """
+
+    def test_username_invalid(self):
+        """用户名错误
+        """
+
+        resp = self.api_post("/open_token", body={
+            "username": "notexist",
+        })
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 400)
+        validate_default_error(body)
+        self.assertEqual(body["status"], "username-incorrect")
+
+    def test_get_token_success(self):
+        """获取 token 成功
+        """
+        username = "wechat"
+        resp = self.api_post("/user", body={"username": username})
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 200)
+        self.validate_default_success(body)
+
+        resp = self.api_post("/open_token", body={"username": username})
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 200)
+        self.validate_default_success(body)
+
+        spec = self.rs.post_open_token.op_spec["responses"]["200"]["schema"]
+        api.validate_object(spec, body)
+
+        user = self.db.query(User).filter_by(username=username).first()
+
+        data = body["data"]
+        payload = decode_token(data["access_token"])
+        self.assertEqual(payload["uid"], str(user.uuid))

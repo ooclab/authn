@@ -116,7 +116,7 @@ paths:
       - token
       summary: 刷新用户的 token
       description: |
-        用户或App都可以通过 refresh_token 刷新 access_token
+        用户刷新 access_token
       parameters:
       - name: body
         in: body
@@ -215,7 +215,7 @@ paths:
       - token
       summary: 刷新 token
       description: |
-        用户或App都可以通过 refresh_token 刷新 access_token
+        App刷新 access_token
       parameters:
       - name: body
         in: body
@@ -258,6 +258,57 @@ paths:
             - `invalid-access-type` : 应该不会出现
           schema:
             $ref: '#/definitions/DefaultErrorResponse'
+
+
+  "/open_token":
+
+    post:
+      tags:
+      - token
+      summary: 通过用户名直接获取 oken
+      x-roles:
+      - admin
+      description: |
+        第三方登录，已经在 `account` 服务里验证了用户，需要返回一个 token。
+
+        (在 `account` 里）实现逻辑：
+        1. 调用 authn 创建用户
+        2. 调用 authn 获取用户的 token
+      parameters:
+      - name: body
+        in: body
+        description: 请求数据
+        schema:
+          type: object
+          required:
+          - username
+          properties:
+            username:
+              type: string
+              description: 用户名
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/ResponseTokenData'
+        default:
+          description: |
+            返回错误信息
+
+            error 值及含义：
+            - `username-incorrect` : 用户名或密码错误
+            - `user-inactive` : 用户已被禁用，请联系管理员
+          schema:
+            $ref: '#/definitions/DefaultErrorResponse'
+
 
   "/app":
 
@@ -434,6 +485,8 @@ paths:
     post:
       tags:
       - user
+      x-roles:
+      - admin
       summary: 创建用户
       description: |
         需要权限 `auth-user-create`
@@ -445,7 +498,6 @@ paths:
           type: object
           required:
           - username
-          - password
           properties:
             username:
               type: string
@@ -454,7 +506,10 @@ paths:
               maxLength: 32
             password:
               type: string
-              description: 密码
+              description: |
+                密码
+
+                注意：如果第三方登录验证机制保障，可以不提供密码，直接创建用户。
               maxLength: 64
       responses:
         "200":
@@ -483,6 +538,8 @@ paths:
     get:
       tags:
       - user
+      x-roles:
+      - admin
       summary: 查看用户信息
       description: |
         需要权限 `auth-user-view`
@@ -510,6 +567,8 @@ paths:
     post:
       tags:
       - user
+      x-roles:
+      - admin
       summary: 更新用户信息
       description: |
         需要权限 `auth-user-edit`
@@ -549,6 +608,8 @@ paths:
     delete:
       tags:
       - user
+      x-roles:
+      - admin
       summary: 删除指定用户
       description: |
         分布式系统中删除指定用户涉及多个流程，举例：

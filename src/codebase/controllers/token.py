@@ -232,3 +232,47 @@ class SingleAppTokenRefreshHandler(_BaseSingleAppHandler):
             "expires_in": utc_rfc3339_string(expires_in),
             "refresh_token": session.refresh_token,
         })
+
+
+class OpenTokenHandler(APIRequestHandler):
+
+    def post(self):
+        """直接获取 Token
+
+        比如用户已经通过微信等第三方认证，需要系统分配一个 token，
+        此时用户没有密码，我们以 openid 等信息创建一个用户账户。
+        直接创建 token 返回即可。
+
+        注意：需要 admin 权限
+        """
+        body = self.get_body_json()
+
+        username = body["username"]
+
+        user = self.db.query(User).filter_by(username=username).first()
+
+        # 错误用户名
+        if not user:
+            self.fail("username-incorrect")
+            return
+
+        # 账号已被禁用
+        if not user.is_active:
+            self.fail("user-inactive")
+            return
+
+        # 验证成功
+        expires_in = datetime.datetime.utcnow() + datetime.timedelta(
+            seconds=int(settings.USER_ACCESS_TOKEN_AGE)
+        )
+        clean_session(self.db, user)
+        session = UserSession(user)
+        self.db.add(session)
+        self.db.commit()
+
+        self.success(data={
+            "uid": str(user.uuid),
+            "access_token": gen_token(user, expires_in),
+            "expires_in": utc_rfc3339_string(expires_in),
+            "refresh_token": session.refresh_token,
+        })

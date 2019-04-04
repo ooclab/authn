@@ -23,7 +23,7 @@ class UserHandler(APIRequestHandler):
 
         user = User(
             username=body["username"],
-            password=body["password"],
+            password=body.get("password"),
         )
         self.db.add(user)
         self.db.commit()

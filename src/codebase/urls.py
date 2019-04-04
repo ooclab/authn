@@ -30,6 +30,9 @@ HANDLERS = [
     url(r"/app_token/refresh",
         token.SingleAppTokenRefreshHandler),
 
+    url(r"/open_token",
+        token.OpenTokenHandler),
+
     # User
 
     url(r"/user",

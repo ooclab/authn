@@ -40,9 +40,10 @@ class User(ORMBase):
     created = Column(DateTime(), default=datetime.datetime.utcnow)
     updated = Column(DateTime(), default=datetime.datetime.utcnow)
 
-    def __init__(self, username, password):
+    def __init__(self, username, password=None):
         self.username = username
-        self.password = encrypt_password(password)
+        if password:
+            self.password = encrypt_password(password)
 
     def validate_password(self, raw_password):
         """
