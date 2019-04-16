@@ -643,6 +643,46 @@ paths:
             $ref: '#/definitions/DefaultErrorResponse'
 
 
+  "/user/by_name/{username}":
+
+    parameters:
+    - $ref: '#/parameters/Authorization'
+    - name: username
+      in: path
+      type: string
+      required: true
+      minLength: 2
+      maxLength: 32
+      description: 用户名
+
+    get:
+      tags:
+      - user
+      x-roles:
+      - admin
+      summary: 给定用户名，查看用户信息
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+            required:
+            - status
+            - data
+            properties:
+              status:
+                $ref: '#/definitions/Status'
+              data:
+                $ref: '#/definitions/User'
+        default:
+          description: |
+            返回错误信息
+            error 值及含义：
+            - `not-found` : 用户不存在
+          schema:
+            $ref: '#/definitions/DefaultErrorResponse'
+
+
 definitions:
 
   Status:
@@ -749,7 +789,7 @@ definitions:
       id:
         type: string
         format: uuid
-        description: 应用ID
+        description: 用户ID
       is_active:
         type: boolean
         description: 是否启用

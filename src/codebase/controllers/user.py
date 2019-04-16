@@ -93,3 +93,12 @@ class SingleUserHandler(_BaseSingleUserHandler):
         self.db.delete(user)
 
         self.db.commit()
+
+
+class UserByNameHandler(APIRequestHandler):
+
+    def get(self, username):
+        user = self.db.query(User).filter_by(username=username).first()
+        if not user:
+            raise HTTPError(400, reason="not-found")
+        self.success(data=user.ifull)

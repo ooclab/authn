@@ -191,3 +191,29 @@ class UserDeleteTestCase(_Base):
         self.assertEqual(self.db.query(App).count(), 1)
         user = self.db.query(User).filter_by(username=username).first()
         self.assertIsNone(user)
+
+
+class UserByNameTestCase(_Base):
+    """GET /user/by_name/{username} - 指定用户名，查看用户详情
+    """
+
+    def test_not_found(self):
+        """用户不存在
+        """
+
+        resp = self.api_get("/user/by_name/not_exist")
+        self.validate_not_found(resp)
+
+    def test_view_success(self):
+        """查看成功
+        """
+        resp = self.api_get(f"/user/by_name/{self.current_user.username}")
+        body = get_body_json(resp)
+        self.assertEqual(resp.code, 200)
+        self.validate_default_success(body)
+
+        spec = self.rs.get_user_by_name_username.op_spec["responses"]["200"]["schema"]
+        api.validate_object(spec, body)
+
+        data = body["data"]
+        self.assertEqual(data["username"], self.current_username)
