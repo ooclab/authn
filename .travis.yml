@@ -1,13 +1,13 @@
 language: python
 python:
-  - "3.7-dev"  # 3.7 development branch
+  - "3.8-dev"  # 3.7 development branch
 # command to install dependencies
 install:
-  - pip install -r requirements.dev.txt
+  - pip install -r requirements.txt -r requirements.dev.txt
 # command to run tests
 script:
   - pylint src tests
   - flake8
   - ./scripts/fix_nose2.sh
-  - nose2 -v --with-coverage --coverage-report xml
+  - nose2 -v --coverage-report xml
   - codecov
